@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Solar System, if Pluto were 1 pixel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stars-bg" aria-hidden="true"></div>
+  <div class="stars-bg stars-bg-near" aria-hidden="true"></div>
+
+  <header class="hud" role="banner">
+    <div class="hud-left">
+      <div class="hud-distance">
+        <span class="hud-label">Distance from Sun</span>
+        <span class="hud-value" id="hud-distance">0 km</span>
+      </div>
+      <div class="hud-unit-toggle" role="group" aria-label="Distance units">
+        <button data-unit="km" class="active">km</button>
+        <button data-unit="au">AU</button>
+        <button data-unit="mi">mi</button>
+      </div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-scale-badge" id="hud-scale">1 pixel = Pluto (2,376 km)</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-light-time">
+        <span class="hud-label">Light from Sun</span>
+        <span class="hud-value" id="hud-light-time">0 s</span>
+      </div>
+      <div class="hud-next">
+        <span class="hud-label">Next</span>
+        <span class="hud-value" id="hud-next">Sun</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="intro-card" id="intro-card">
+    <h1>The Solar System at True Scale</h1>
+    <p>On this page, <strong>Pluto is 1 pixel</strong>. Everything — the planets, their distances, the moons, the spacecraft — is sized in proportion. Scroll right.</p>
+    <p>You will travel <strong>25 billion kilometres</strong>, or about ten million pixels. Most of it will be empty. That is the point.</p>
+    <p class="intro-tips">
+      <span><kbd>→</kbd> scroll</span>
+      <span><kbd>1</kbd>–<kbd>9</kbd> jump to a planet</span>
+      <span><kbd>0</kbd> back to the Sun</span>
+      <span><kbd>End</kbd> the very end</span>
+    </p>
+    <button class="intro-dismiss" id="intro-dismiss">Begin</button>
+  </div>
+
+  <main class="strip-viewport" id="strip-viewport" tabindex="0">
+    <div class="strip" id="strip"></div>
+  </main>
+
+  <div class="milestone-card" id="milestone-card" hidden aria-live="polite"></div>
+
+  <footer class="minimap" role="navigation" aria-label="Solar system minimap">
+    <div class="minimap-track" id="minimap-track">
+      <div class="minimap-cursor" id="minimap-cursor"></div>
+    </div>
+  </footer>
+
+  <div class="subzoom-overlay" id="subzoom-overlay" hidden aria-hidden="true">
+    <div class="subzoom-panel">
+      <header class="subzoom-header">
+        <div>
+          <h2 id="subzoom-title">Earth detail</h2>
+          <p class="subzoom-scale" id="subzoom-scale">1 pixel = 1 km</p>
+        </div>
+        <button class="subzoom-close" id="subzoom-close" aria-label="Close detail view">×</button>
+      </header>
+      <div class="subzoom-viewport" id="subzoom-viewport">
+        <div class="subzoom-strip" id="subzoom-strip"></div>
+      </div>
+      <div class="subzoom-detail" id="subzoom-detail" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <nav class="body-index" id="body-index" aria-label="Jump to body">
+    <button class="body-index-toggle" id="body-index-toggle" aria-expanded="false">Bodies</button>
+    <ul class="body-index-list" id="body-index-list" hidden></ul>
+  </nav>
+
+  <nav class="glossary-nav" id="glossary-nav" aria-label="Glossary">
+    <button class="glossary-nav-toggle" id="glossary-nav-toggle" aria-expanded="false">Glossary</button>
+    <ul class="glossary-nav-list" id="glossary-nav-list" hidden></ul>
+  </nav>
+
+  <div class="info-panel" id="info-panel" hidden aria-hidden="true" role="dialog" aria-labelledby="info-panel-title">
+    <header class="info-panel-header">
+      <h2 id="info-panel-title">Body</h2>
+      <button class="info-panel-close" id="info-panel-close" aria-label="Close info panel">×</button>
+    </header>
+    <div class="info-panel-body" id="info-panel-body"></div>
+  </div>
+
+  <div class="glossary-popover" id="glossary-popover" hidden aria-hidden="true" role="tooltip">
+    <div class="glossary-popover-term" id="glossary-popover-term"></div>
+    <div class="glossary-popover-def" id="glossary-popover-def"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
