@@ -912,14 +912,86 @@
     // Mouse wheel → horizontal scroll. We intercept only when the user is
     // scrolling vertically (deltaY) with no horizontal gesture, so a
     // trackpad's native horizontal pan still goes through untouched.
+    // WHEEL_SPEED slows the wheel down so each tick covers less distance.
+    const WHEEL_SPEED = 0.67;
     VIEWPORT.addEventListener('wheel', (e) => {
       if (e.deltaX !== 0 || e.deltaY === 0) return;
       let dx = e.deltaY;
       if (e.deltaMode === 1) dx *= 16;                              // LINE
       else if (e.deltaMode === 2) dx *= VIEWPORT.clientWidth * 0.9; // PAGE
       e.preventDefault();
-      VIEWPORT.scrollLeft += dx;
+      VIEWPORT.scrollLeft += dx * WHEEL_SPEED;
     }, { passive: false });
+
+    // Touch → horizontal scroll, geared down to match wheel feel, with
+    // a custom inertia loop because we override the browser's native
+    // scrolling (which is what makes mobile scroll "too fast" otherwise).
+    const TOUCH_SPEED = WHEEL_SPEED;
+    const TOUCH_MOVE_THRESHOLD = 4;     // px of finger movement before we take over (preserves taps)
+    const INERTIA_DECAY_PER_16MS = 0.94;
+    const INERTIA_STOP_THRESHOLD = 0.02;
+    let touchActive = false;
+    let touchOwnedScroll = false;
+    let touchStartScreenX = 0;
+    let touchStartScrollLeft = 0;
+    let touchLastScreenX = 0;
+    let touchLastTime = 0;
+    let touchVelocity = 0;              // scroll-px per ms (already speed-adjusted)
+    let inertiaRafId = null;
+    function cancelTouchInertia() {
+      if (inertiaRafId) { cancelAnimationFrame(inertiaRafId); inertiaRafId = null; }
+    }
+    VIEWPORT.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) { touchActive = false; return; }
+      cancelTouchInertia();
+      touchActive = true;
+      touchOwnedScroll = false;
+      touchStartScreenX = e.touches[0].clientX;
+      touchStartScrollLeft = VIEWPORT.scrollLeft;
+      touchLastScreenX = touchStartScreenX;
+      touchLastTime = performance.now();
+      touchVelocity = 0;
+    }, { passive: true });
+    VIEWPORT.addEventListener('touchmove', (e) => {
+      if (!touchActive || e.touches.length !== 1) return;
+      const x = e.touches[0].clientX;
+      const screenDx = touchStartScreenX - x;
+      if (!touchOwnedScroll) {
+        if (Math.abs(screenDx) < TOUCH_MOVE_THRESHOLD) return;
+        touchOwnedScroll = true;
+      }
+      e.preventDefault();
+      VIEWPORT.scrollLeft = touchStartScrollLeft + screenDx * TOUCH_SPEED;
+      const now = performance.now();
+      const dt = now - touchLastTime;
+      if (dt > 0) {
+        touchVelocity = ((touchLastScreenX - x) / dt) * TOUCH_SPEED;
+      }
+      touchLastScreenX = x;
+      touchLastTime = now;
+    }, { passive: false });
+    function endTouch() {
+      if (!touchActive) return;
+      touchActive = false;
+      if (!touchOwnedScroll) return;     // tap, not a drag — leave inertia alone
+      let v = touchVelocity;
+      if (Math.abs(v) < INERTIA_STOP_THRESHOLD) return;
+      let lastT = performance.now();
+      const tick = (now) => {
+        const dt = now - lastT;
+        lastT = now;
+        VIEWPORT.scrollLeft += v * dt;
+        v *= Math.pow(INERTIA_DECAY_PER_16MS, dt / 16);
+        if (Math.abs(v) > INERTIA_STOP_THRESHOLD) {
+          inertiaRafId = requestAnimationFrame(tick);
+        } else {
+          inertiaRafId = null;
+        }
+      };
+      inertiaRafId = requestAnimationFrame(tick);
+    }
+    VIEWPORT.addEventListener('touchend', endTouch, { passive: true });
+    VIEWPORT.addEventListener('touchcancel', endTouch, { passive: true });
 
     if (window.location.hash) {
       jumpFromHash();
