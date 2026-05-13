@@ -4,11 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Solar System, if Pluto were 1 pixel</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <div class="stars-bg" aria-hidden="true"></div>
   <div class="stars-bg stars-bg-near" aria-hidden="true"></div>
+  <div class="stars-bg stars-bg-foreground" aria-hidden="true"></div>
+  <div class="motion-streaks" aria-hidden="true"></div>
+
+  <div class="spaceship" aria-hidden="true">
+    <svg class="spaceship-svg" viewBox="0 0 110 50" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="flameOuter" x1="0" y1="0.5" x2="1" y2="0.5">
+          <stop offset="0" stop-color="#ff4010" stop-opacity="0"/>
+          <stop offset="0.45" stop-color="#ff6020" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="#ff9040" stop-opacity="0.85"/>
+        </linearGradient>
+        <linearGradient id="flameInner" x1="0" y1="0.5" x2="1" y2="0.5">
+          <stop offset="0" stop-color="#ffd040" stop-opacity="0"/>
+          <stop offset="0.5" stop-color="#ffe070" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="#ffffd0" stop-opacity="1"/>
+        </linearGradient>
+        <radialGradient id="cockpitGrad" cx="0.3" cy="0.3" r="0.8">
+          <stop offset="0" stop-color="#bcd9ff"/>
+          <stop offset="0.6" stop-color="#5a9aff"/>
+          <stop offset="1" stop-color="#1d4499"/>
+        </radialGradient>
+      </defs>
+      <!-- Outer flame -->
+      <ellipse class="ship-flame ship-flame-outer" cx="32" cy="25" rx="30" ry="6" fill="url(#flameOuter)"/>
+      <!-- Inner flame -->
+      <ellipse class="ship-flame ship-flame-inner" cx="36" cy="25" rx="20" ry="3" fill="url(#flameInner)"/>
+      <!-- Lower fin -->
+      <path d="M44 32 L40 42 L54 34 Z" fill="#8a93a8"/>
+      <!-- Upper fin -->
+      <path d="M44 18 L40 8 L54 16 Z" fill="#8a93a8"/>
+      <!-- Body -->
+      <path d="M48 18 Q60 14 88 18 L100 25 L88 32 Q60 36 48 32 Z"
+            fill="#d4dae5" stroke="#5a6175" stroke-width="0.9"/>
+      <!-- Window band -->
+      <path d="M62 22 L86 22 M62 28 L86 28" stroke="#9ba3b3" stroke-width="0.5" fill="none"/>
+      <!-- Cockpit -->
+      <ellipse cx="80" cy="25" rx="7" ry="3.5" fill="url(#cockpitGrad)" stroke="#3a5a8a" stroke-width="0.6"/>
+      <!-- Cockpit highlight -->
+      <ellipse cx="77" cy="23.5" rx="2" ry="0.8" fill="#fff" opacity="0.7"/>
+    </svg>
+  </div>
 
   <header class="hud" role="banner">
     <div class="hud-left">
@@ -101,7 +142,7 @@
     <div class="glossary-popover-def" id="glossary-popover-def"></div>
   </div>
 
-  <script src="data.js?v=2"></script>
-  <script src="script.js?v=2"></script>
+  <script src="data.js?v=3"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>

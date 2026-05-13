@@ -18,6 +18,8 @@
   const INTRO_DISMISS = document.getElementById('intro-dismiss');
   const STARS_BG = document.querySelector('.stars-bg');
   const STARS_BG_NEAR = document.querySelector('.stars-bg-near');
+  const STARS_BG_FG = document.querySelector('.stars-bg-foreground');
+  const MOTION_STREAKS = document.querySelector('.motion-streaks');
   const SUBZOOM_OVERLAY = document.getElementById('subzoom-overlay');
   const SUBZOOM_TITLE = document.getElementById('subzoom-title');
   const SUBZOOM_SCALE = document.getElementById('subzoom-scale');
@@ -396,6 +398,21 @@
     });
   }
 
+  // Add an `is-scrolling` class to <body> while the user is actively scrolling,
+  // remove it ~250 ms after they stop. The spaceship flame and motion streaks
+  // listen to this class to bloom/fade.
+  let scrollActivityTimer = null;
+  function markScrollActivity() {
+    if (!document.body.classList.contains('is-scrolling')) {
+      document.body.classList.add('is-scrolling');
+    }
+    if (scrollActivityTimer) clearTimeout(scrollActivityTimer);
+    scrollActivityTimer = setTimeout(() => {
+      document.body.classList.remove('is-scrolling');
+      scrollActivityTimer = null;
+    }, 280);
+  }
+
   function updateAll() {
     const scrollLeft = VIEWPORT.scrollLeft;
     const viewportWidth = VIEWPORT.clientWidth;
@@ -413,9 +430,15 @@
       HUD_NEXT.textContent = 'interstellar space';
     }
 
-    // Star parallax — multiply background-position-x by depth factor
-    STARS_BG.style.backgroundPositionX = (-scrollLeft * 0.18) + 'px';
-    STARS_BG_NEAR.style.backgroundPositionX = (-scrollLeft * 0.55) + 'px';
+    // Star parallax — multiply background-position-x by depth factor.
+    // Far stars drift slowly, mid stars normal, foreground stars rush past.
+    STARS_BG.style.backgroundPositionX = (-scrollLeft * 0.15) + 'px';
+    STARS_BG_NEAR.style.backgroundPositionX = (-scrollLeft * 0.45) + 'px';
+    if (STARS_BG_FG) STARS_BG_FG.style.backgroundPositionX = (-scrollLeft * 0.95) + 'px';
+    if (MOTION_STREAKS) MOTION_STREAKS.style.backgroundPositionX = (-scrollLeft * 1.4) + 'px';
+
+    // Mark scroll activity for the spaceship flame + motion streaks
+    markScrollActivity();
 
     // Minimap cursor
     const f = logFraction(distanceKm);
