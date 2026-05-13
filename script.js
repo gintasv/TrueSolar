@@ -645,7 +645,9 @@
   // Arrow-key pan: constant-speed scroll while the key is held. No leapfrogs
   // because we drive scrollLeft directly each frame instead of queuing
   // smooth-scroll animations.
-  const ARROW_PAN_PX_PER_SEC = 900;
+  // Arrow-key pan calibrated to 7× the speed of light through represented space.
+  const ARROW_PAN_C_MULTIPLIER = 7;
+  const ARROW_PAN_PX_PER_SEC = ARROW_PAN_C_MULTIPLIER * SPEED_OF_LIGHT_KM_S * PX_PER_KM;
   let arrowPanDir = 0;       // -1 = left, 0 = stopped, 1 = right
   let arrowPanRafId = null;
   let arrowPanLastT = 0;
