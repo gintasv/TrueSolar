@@ -582,6 +582,12 @@
   };
 
   function setupKeyboard() {
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft') stopArrowPan(-1);
+      else if (e.key === 'ArrowRight') stopArrowPan(1);
+    });
+    // Safety: cancel pan if focus leaves (otherwise scroll keeps going after Alt-Tab)
+    window.addEventListener('blur', () => { arrowPanDir = 0; });
     document.addEventListener('keydown', (e) => {
       if (e.target.matches('input, textarea, [contenteditable="true"]')) return;
       if (!SUBZOOM_OVERLAY.hidden) {
@@ -614,10 +620,10 @@
         stepBody(1);
       } else if (key === 'ArrowLeft') {
         e.preventDefault();
-        VIEWPORT.scrollBy({ left: -VIEWPORT.clientWidth * 0.85, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        if (!e.repeat) startArrowPan(-1);
       } else if (key === 'ArrowRight') {
         e.preventDefault();
-        VIEWPORT.scrollBy({ left: VIEWPORT.clientWidth * 0.85, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        if (!e.repeat) startArrowPan(1);
       } else if (key === 'PageUp') {
         e.preventDefault();
         VIEWPORT.scrollBy({ left: -VIEWPORT.clientWidth * 4, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
@@ -626,6 +632,30 @@
         VIEWPORT.scrollBy({ left: VIEWPORT.clientWidth * 4, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
       }
     });
+  }
+
+  // Arrow-key pan: constant-speed scroll while the key is held. No leapfrogs
+  // because we drive scrollLeft directly each frame instead of queuing
+  // smooth-scroll animations.
+  const ARROW_PAN_PX_PER_SEC = 900;
+  let arrowPanDir = 0;       // -1 = left, 0 = stopped, 1 = right
+  let arrowPanRafId = null;
+  let arrowPanLastT = 0;
+  function startArrowPan(direction) {
+    arrowPanDir = direction;
+    if (arrowPanRafId) return;
+    arrowPanLastT = performance.now();
+    const tick = (now) => {
+      if (arrowPanDir === 0) { arrowPanRafId = null; return; }
+      const dt = Math.min(50, now - arrowPanLastT);
+      arrowPanLastT = now;
+      VIEWPORT.scrollLeft += arrowPanDir * ARROW_PAN_PX_PER_SEC * (dt / 1000);
+      arrowPanRafId = requestAnimationFrame(tick);
+    };
+    arrowPanRafId = requestAnimationFrame(tick);
+  }
+  function stopArrowPan(direction) {
+    if (arrowPanDir === direction) arrowPanDir = 0;
   }
 
   function stepBody(direction) {
