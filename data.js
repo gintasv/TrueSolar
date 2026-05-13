@@ -325,5 +325,113 @@ const BODY_DETAILS = {
       "Slowly drifting away from Earth at about 3.8 cm per year.",
       "Without the Moon, Earth's axial tilt would wobble chaotically over millions of years."
     ]
+  },
+  "mercury": {
+    overview: "The smallest planet and the closest to the Sun. Barely any atmosphere, so temperatures swing wildly between day and night. Mercury has been visited by only two spacecraft — Mariner 10 and MESSENGER.",
+    facts: [
+      "A year here is 88 Earth days, but a solar day (sunrise to sunrise) lasts 176 Earth days.",
+      "Temperatures range from −180 °C at night to +430 °C in daylight.",
+      "Despite being closest to the Sun, water ice exists in permanently shadowed craters at its poles.",
+      "Surface is heavily cratered, much like our Moon."
+    ]
+  },
+  "venus": {
+    overview: "Nearly the same size as Earth, but a runaway greenhouse atmosphere of CO₂ has turned it into the hottest world in the solar system. The surface pressure is 92 times Earth's — equivalent to standing under almost a kilometre of water.",
+    facts: [
+      "Surface temperature ~465 °C, hotter than Mercury despite being further from the Sun.",
+      "Rotates retrograde — the Sun rises in the west and sets in the east.",
+      "A day on Venus (243 Earth days) is longer than its year (225 Earth days).",
+      "Clouds of sulphuric acid float above a dry, rocky surface dominated by volcanoes."
+    ]
+  },
+  "mars": {
+    overview: "Cold, dry, and rust-coloured from iron oxide on its surface. The most explored body in the solar system after Earth — currently home to several rovers, landers, and orbiters from multiple space agencies.",
+    facts: [
+      "Olympus Mons is the largest volcano in the solar system — 22 km tall, three times the height of Mount Everest.",
+      "Has two tiny moons (Phobos and Deimos), probably captured asteroids.",
+      "Strong evidence of ancient liquid water — dry river channels, lake beds, and salt deposits.",
+      "A day on Mars is 24 hours 37 minutes — almost identical to Earth's."
+    ]
+  },
+  "ceres": {
+    overview: "Largest object in the asteroid belt and the only dwarf planet in the inner solar system. Discovered in 1801 — the first asteroid ever found, originally classified as a planet before being demoted to asteroid, then promoted again to dwarf planet in 2006.",
+    facts: [
+      "Contains about 25% of the entire asteroid belt's mass.",
+      "Has water ice mixed into its crust and possibly a salty subsurface ocean.",
+      "Visited by NASA's Dawn spacecraft from 2015 to 2018.",
+      "Bright spots in Occator Crater turned out to be sodium carbonate deposits — salts left behind by briny water."
+    ]
+  },
+  "uranus": {
+    overview: "An ice giant — mostly water, methane, and ammonia ices around a small rocky core. Methane in the atmosphere gives it a pale blue-green colour. Famously tilted on its side, probably from an ancient collision.",
+    facts: [
+      "Axis tilted 98° — effectively rolls along its orbit. Each pole gets 42 years of sunlight followed by 42 years of darkness.",
+      "Coldest measured atmosphere in the solar system: −224 °C.",
+      "Has 27 known moons, mostly named after Shakespeare characters (Titania, Oberon, Miranda…).",
+      "Visited by only one spacecraft — Voyager 2 in 1986."
+    ]
+  },
+  "neptune": {
+    overview: "Outermost giant planet, deep blue from atmospheric methane. Discovered in 1846 using mathematics — predicted from the way it tugged on Uranus's orbit, then confirmed by telescope within a day. Has the fastest winds in the solar system.",
+    facts: [
+      "Wind speeds reach over 2,000 km/h — supersonic.",
+      "An orbital year is 165 Earth years; it has only completed one full orbit since being discovered.",
+      "Its largest moon, Triton, orbits backward — strongly hinting it's a captured Kuiper Belt object.",
+      "Visited only by Voyager 2 in 1989, which discovered the Great Dark Spot (since vanished)."
+    ]
+  },
+  "new-horizons": {
+    overview: "Launched January 2006 to do the first close-up reconnaissance of Pluto. Flew past on July 14, 2015 and then continued outward, flying by Arrokoth — a small Kuiper Belt object — on New Year's Day 2019.",
+    facts: [
+      "Fastest launch ever — left Earth at over 16 km/s, faster than any prior mission.",
+      "Took 9 years and 5 months to reach Pluto.",
+      "Revealed Pluto's heart-shaped nitrogen-ice glacier and tall mountains of water ice.",
+      "Still operating in the Kuiper Belt; signals take about 8 hours one-way to reach Earth."
+    ]
+  },
+  "pioneer-10": {
+    overview: "First spacecraft to traverse the asteroid belt and the first to visit Jupiter. Launched March 1972. NASA lost contact in 2003 — its plutonium power source had decayed too far to keep the radio running.",
+    facts: [
+      "Reached Jupiter in December 1973 — a flyby that proved spacecraft could survive the asteroid belt and Jupiter's radiation.",
+      "Carries the Pioneer plaque — a diagram of a man, a woman, and Earth's location, intended for any alien finders.",
+      "Heading toward the star Aldebaran. It will pass close (in cosmic terms) in about 2 million years.",
+      "Still drifting silently outward, even though we can no longer hear it."
+    ]
+  },
+  "pioneer-11": {
+    overview: "Sister probe to Pioneer 10. Launched April 1973. Used Jupiter's gravity to slingshot to Saturn, becoming the first spacecraft to visit that planet. Last contact in 1995.",
+    facts: [
+      "First close-up images of Saturn and its rings (September 1979) — six years before Voyager.",
+      "Carries the same Pioneer plaque as its sister probe.",
+      "Heading toward the constellation Aquila.",
+      "Discovered a previously unknown ring around Saturn (the F-ring) and two new moons."
+    ]
+  },
+  "voyager-2": {
+    overview: "The only spacecraft to have visited Uranus and Neptune. Launched August 1977 — sixteen days BEFORE Voyager 1, despite the lower number. Took a slower trajectory that allowed it to fly past all four giant planets in a once-every-176-years alignment.",
+    facts: [
+      "Flew past Jupiter (1979), Saturn (1981), Uranus (1986), and Neptune (1989).",
+      "Discovered 11 new moons and two new rings during the grand tour.",
+      "Crossed the heliopause into interstellar space on November 5, 2018 — 6 years after Voyager 1.",
+      "Carries an identical Golden Record, with greetings in 55 languages and music from across human cultures."
+    ]
+  },
+  "termination-shock": {
+    overview: "The point where the supersonic solar wind suddenly slows to subsonic speeds as it pushes against the surrounding interstellar gas. Located roughly 80–100 AU from the Sun. Beyond it lies the heliosheath — a turbulent boundary region — and then the heliopause.",
+    facts: [
+      "Voyager 1 crossed it in December 2004.",
+      "Voyager 2 crossed it in August 2007.",
+      "At the crossing, solar-wind particle speeds drop from ~400 km/s to ~100 km/s.",
+      "Not a fixed boundary — it expands and contracts with the 11-year solar activity cycle."
+    ]
+  },
+  "heliopause": {
+    overview: "The outer edge of the heliosphere — the bubble of solar influence around our Sun. Out here, the solar wind's outward pressure is exactly balanced by interstellar gas pushing in. Many consider this the true edge of the solar system.",
+    facts: [
+      "Located about 120 AU from the Sun (~18 billion km).",
+      "Voyager 1 crossed it on August 25, 2012 — the first human-made object to enter interstellar space.",
+      "Voyager 2 followed on November 5, 2018.",
+      "Beyond it, particles from other stars outnumber those from our Sun."
+    ]
   }
 };
