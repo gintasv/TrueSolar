@@ -779,7 +779,14 @@
     if (!det) return;
     INFO_PANEL_TITLE.textContent = body.name;
 
-    let html = '<div class="stats">';
+    let html = '';
+    if (det.image) {
+      html += '<figure class="info-panel-figure">'
+           +    '<img src="' + escapeHtml(det.image) + '" alt="' + escapeHtml(body.name) + '" loading="lazy" referrerpolicy="no-referrer">'
+           + (det.image_credit ? '<figcaption>' + escapeHtml(det.image_credit) + '</figcaption>' : '')
+           + '</figure>';
+    }
+    html += '<div class="stats">';
     if (body.distance_km > 0) {
       html += '<span class="label">Distance from Sun</span>'
            +  '<span class="value">' + escapeHtml((body.distance_km / KM_PER_AU).toFixed(2) + ' AU · ' + formatNumber(body.distance_km) + ' km') + '</span>';

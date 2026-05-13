@@ -269,6 +269,8 @@ const GLOSSARY = {
 // ============================================================
 const BODY_DETAILS = {
   "sun": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/The_Sun_in_white_light.jpg/330px-The_Sun_in_white_light.jpg",
+    image_credit: "NASA / SDO (Wikimedia Commons)",
     overview: "A G-type main-sequence star roughly 4.6 billion years old, with another ~5 billion years before it swells into a red giant. The Sun contains 99.86% of the mass of the entire solar system — every planet, moon, asteroid and comet combined is the remaining 0.14%.",
     facts: [
       "Surface temperature ~5,500 °C; core temperature ~15 million °C.",
@@ -278,6 +280,8 @@ const BODY_DETAILS = {
     ]
   },
   "earth": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Meteosat-12-fci-march-equinox-2025-noon.jpg/330px-Meteosat-12-fci-march-equinox-2025-noon.jpg",
+    image_credit: "EUMETSAT / Meteosat-12 (Wikimedia Commons)",
     overview: "The only known place in the universe with life. Exactly one AU from the Sun by definition — the AU is calibrated to Earth's average orbital radius.",
     facts: [
       "71% of the surface is water — the only solid body in the solar system with liquid water seas.",
@@ -286,6 +290,8 @@ const BODY_DETAILS = {
     ]
   },
   "jupiter": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Jupiter_OPAL_2024.png/330px-Jupiter_OPAL_2024.png",
+    image_credit: "NASA / Hubble OPAL (Wikimedia Commons)",
     overview: "A gas giant with more than twice the mass of every other planet combined. If it had been about 80 times more massive at birth, it would have become a star.",
     facts: [
       "The Great Red Spot is a storm wider than Earth, observed continuously since 1830.",
@@ -294,6 +300,8 @@ const BODY_DETAILS = {
     ]
   },
   "saturn": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/330px-Saturn_during_Equinox.jpg",
+    image_credit: "NASA / JPL / Cassini (Wikimedia Commons)",
     overview: "The second-largest planet, famous for its ring system. The rings are spectacular but extraordinarily thin — only about 10 to 30 metres thick on average, with a diameter of 280,000 km.",
     facts: [
       "Less dense than water — Saturn would float, if you found a big enough bathtub.",
@@ -302,6 +310,8 @@ const BODY_DETAILS = {
     ]
   },
   "pluto": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Pluto_in_True_Color_-_High-Res.png/330px-Pluto_in_True_Color_-_High-Res.png",
+    image_credit: "NASA / JHUAPL / SwRI / New Horizons (Wikimedia Commons)",
     overview: "Reclassified as a dwarf planet in 2006 because it shares its orbital neighbourhood with other Kuiper Belt objects. New Horizons flew past in July 2015, revealing a surprisingly complex world with mountains of water ice and plains of frozen nitrogen.",
     facts: [
       "Has five known moons; Charon is so large that Pluto and Charon orbit a point in empty space between them.",
@@ -310,6 +320,8 @@ const BODY_DETAILS = {
     ]
   },
   "voyager-1": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Voyager_spacecraft_model.png/330px-Voyager_spacecraft_model.png",
+    image_credit: "NASA (Wikimedia Commons)",
     overview: "Launched September 1977, intended for a Jupiter–Saturn flyby. It overperformed: still transmitting in the 2020s from beyond the heliopause, the most distant human-made object in existence.",
     facts: [
       "Carries the Golden Record — a phonograph disc with sounds, music, and greetings from Earth.",
@@ -319,6 +331,8 @@ const BODY_DETAILS = {
     ]
   },
   "moon": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/330px-FullMoon2010.jpg",
+    image_credit: "Gregory H. Revera (Wikimedia Commons, CC BY-SA)",
     overview: "Earth's only natural satellite, formed about 4.5 billion years ago from debris when a Mars-sized body smashed into the proto-Earth.",
     facts: [
       "Always shows the same face to Earth (tidally locked).",
@@ -327,6 +341,8 @@ const BODY_DETAILS = {
     ]
   },
   "mercury": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Mercury_in_true_color.jpg/330px-Mercury_in_true_color.jpg",
+    image_credit: "NASA / JHUAPL / Carnegie / MESSENGER (Wikimedia Commons)",
     overview: "The smallest planet and the closest to the Sun. Barely any atmosphere, so temperatures swing wildly between day and night. Mercury has been visited by only two spacecraft — Mariner 10 and MESSENGER.",
     facts: [
       "A year here is 88 Earth days, but a solar day (sunrise to sunrise) lasts 176 Earth days.",
@@ -336,6 +352,8 @@ const BODY_DETAILS = {
     ]
   },
   "venus": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Venus_2_Approach_Image.jpg/330px-Venus_2_Approach_Image.jpg",
+    image_credit: "NASA / Mariner / Wikimedia Commons",
     overview: "Nearly the same size as Earth, but a runaway greenhouse atmosphere of CO₂ has turned it into the hottest world in the solar system. The surface pressure is 92 times Earth's — equivalent to standing under almost a kilometre of water.",
     facts: [
       "Surface temperature ~465 °C, hotter than Mercury despite being further from the Sun.",
@@ -345,6 +363,8 @@ const BODY_DETAILS = {
     ]
   },
   "mars": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Mars_-_August_30_2021_-_Flickr_-_Kevin_M._Gill.png/330px-Mars_-_August_30_2021_-_Flickr_-_Kevin_M._Gill.png",
+    image_credit: "Kevin M. Gill / NASA (Wikimedia Commons, CC BY)",
     overview: "Cold, dry, and rust-coloured from iron oxide on its surface. The most explored body in the solar system after Earth — currently home to several rovers, landers, and orbiters from multiple space agencies.",
     facts: [
       "Olympus Mons is the largest volcano in the solar system — 22 km tall, three times the height of Mount Everest.",
@@ -354,6 +374,8 @@ const BODY_DETAILS = {
     ]
   },
   "ceres": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Ceres_-_RC3_-_Haulani_Crater_%2822381131691%29_%28cropped%29.jpg/330px-Ceres_-_RC3_-_Haulani_Crater_%2822381131691%29_%28cropped%29.jpg",
+    image_credit: "NASA / JPL / Dawn (Wikimedia Commons)",
     overview: "Largest object in the asteroid belt and the only dwarf planet in the inner solar system. Discovered in 1801 — the first asteroid ever found, originally classified as a planet before being demoted to asteroid, then promoted again to dwarf planet in 2006.",
     facts: [
       "Contains about 25% of the entire asteroid belt's mass.",
@@ -363,6 +385,8 @@ const BODY_DETAILS = {
     ]
   },
   "uranus": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Uranus_Voyager2_color_calibrated.png/330px-Uranus_Voyager2_color_calibrated.png",
+    image_credit: "NASA / Voyager 2 (Wikimedia Commons)",
     overview: "An ice giant — mostly water, methane, and ammonia ices around a small rocky core. Methane in the atmosphere gives it a pale blue-green colour. Famously tilted on its side, probably from an ancient collision.",
     facts: [
       "Axis tilted 98° — effectively rolls along its orbit. Each pole gets 42 years of sunlight followed by 42 years of darkness.",
@@ -372,6 +396,8 @@ const BODY_DETAILS = {
     ]
   },
   "neptune": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Neptune_Voyager2_color_calibrated.png/330px-Neptune_Voyager2_color_calibrated.png",
+    image_credit: "NASA / Voyager 2 (Wikimedia Commons)",
     overview: "Outermost giant planet, deep blue from atmospheric methane. Discovered in 1846 using mathematics — predicted from the way it tugged on Uranus's orbit, then confirmed by telescope within a day. Has the fastest winds in the solar system.",
     facts: [
       "Wind speeds reach over 2,000 km/h — supersonic.",
@@ -381,6 +407,8 @@ const BODY_DETAILS = {
     ]
   },
   "new-horizons": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/New_Horizons_spacecraft_model_1.png/330px-New_Horizons_spacecraft_model_1.png",
+    image_credit: "NASA (Wikimedia Commons)",
     overview: "Launched January 2006 to do the first close-up reconnaissance of Pluto. Flew past on July 14, 2015 and then continued outward, flying by Arrokoth — a small Kuiper Belt object — on New Year's Day 2019.",
     facts: [
       "Fastest launch ever — left Earth at over 16 km/s, faster than any prior mission.",
@@ -390,6 +418,8 @@ const BODY_DETAILS = {
     ]
   },
   "pioneer-10": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/An_artist%27s_impression_of_a_Pioneer_spacecraft_on_its_way_to_interstellar_space.jpg/330px-An_artist%27s_impression_of_a_Pioneer_spacecraft_on_its_way_to_interstellar_space.jpg",
+    image_credit: "NASA artist's impression (Wikimedia Commons)",
     overview: "First spacecraft to traverse the asteroid belt and the first to visit Jupiter. Launched March 1972. NASA lost contact in 2003 — its plutonium power source had decayed too far to keep the radio running.",
     facts: [
       "Reached Jupiter in December 1973 — a flyby that proved spacecraft could survive the asteroid belt and Jupiter's radiation.",
@@ -399,6 +429,8 @@ const BODY_DETAILS = {
     ]
   },
   "pioneer-11": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/An_artist%27s_impression_of_a_Pioneer_spacecraft_on_its_way_to_interstellar_space.jpg/330px-An_artist%27s_impression_of_a_Pioneer_spacecraft_on_its_way_to_interstellar_space.jpg",
+    image_credit: "NASA artist's impression (Wikimedia Commons)",
     overview: "Sister probe to Pioneer 10. Launched April 1973. Used Jupiter's gravity to slingshot to Saturn, becoming the first spacecraft to visit that planet. Last contact in 1995.",
     facts: [
       "First close-up images of Saturn and its rings (September 1979) — six years before Voyager.",
@@ -408,6 +440,8 @@ const BODY_DETAILS = {
     ]
   },
   "voyager-2": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Voyager_spacecraft_model.png/330px-Voyager_spacecraft_model.png",
+    image_credit: "NASA (Wikimedia Commons)",
     overview: "The only spacecraft to have visited Uranus and Neptune. Launched August 1977 — sixteen days BEFORE Voyager 1, despite the lower number. Took a slower trajectory that allowed it to fly past all four giant planets in a once-every-176-years alignment.",
     facts: [
       "Flew past Jupiter (1979), Saturn (1981), Uranus (1986), and Neptune (1989).",
@@ -417,6 +451,8 @@ const BODY_DETAILS = {
     ]
   },
   "termination-shock": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/PIA22835-VoyagerProgram%26Heliosphere-Chart-20181210.png/330px-PIA22835-VoyagerProgram%26Heliosphere-Chart-20181210.png",
+    image_credit: "NASA / JPL-Caltech (Wikimedia Commons)",
     overview: "The point where the supersonic solar wind suddenly slows to subsonic speeds as it pushes against the surrounding interstellar gas. Located roughly 80–100 AU from the Sun. Beyond it lies the heliosheath — a turbulent boundary region — and then the heliopause.",
     facts: [
       "Voyager 1 crossed it in December 2004.",
@@ -426,6 +462,8 @@ const BODY_DETAILS = {
     ]
   },
   "heliopause": {
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/PIA22835-VoyagerProgram%26Heliosphere-Chart-20181210.png/330px-PIA22835-VoyagerProgram%26Heliosphere-Chart-20181210.png",
+    image_credit: "NASA / JPL-Caltech (Wikimedia Commons)",
     overview: "The outer edge of the heliosphere — the bubble of solar influence around our Sun. Out here, the solar wind's outward pressure is exactly balanced by interstellar gas pushing in. Many consider this the true edge of the solar system.",
     facts: [
       "Located about 120 AU from the Sun (~18 billion km).",
