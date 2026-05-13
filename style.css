@@ -134,7 +134,14 @@ kbd {
   pointer-events: none;
   animation: shipBob 5s ease-in-out infinite;
   filter: drop-shadow(0 0 6px rgba(120, 200, 255, 0.12));
+  opacity: 1;
+  transition: opacity 380ms ease-out, filter 380ms ease-out;
 }
+body.is-landed .spaceship {
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(120, 200, 255, 0));
+}
+body.is-landed .ship-flame { opacity: 0; }
 .spaceship-svg { width: 100%; height: auto; display: block; }
 @keyframes shipBob {
   0%, 100% { transform: translateY(calc(-50% - 4px)); }

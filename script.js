@@ -453,18 +453,26 @@
       body._element.classList.toggle('in-view', visible);
     });
 
-    // Milestone card — show body if camera is close to it
+    // Milestone card — show body if camera is close to it. Also use the
+    // same "near a body" check to land the spaceship (fade it out, as if
+    // we've docked).
     const nearest = findNearestPointBody(distanceKm);
+    let landed = false;
     if (nearest) {
       const nearestX = strip_x(nearest.distance_km);
       const proximityPx = nearest.diameter_km
         ? Math.max(nearest.diameter_km * PX_PER_KM, 40)
         : 60;
-      if (Math.abs(nearestX - cameraX) < proximityPx + 20) {
+      const nearBody = Math.abs(nearestX - cameraX) < proximityPx + 20;
+      if (nearBody) {
         showMilestone(nearest);
+        landed = true;
       } else {
         scheduleHideMilestone();
       }
+    }
+    if (landed !== document.body.classList.contains('is-landed')) {
+      document.body.classList.toggle('is-landed', landed);
     }
 
     // URL hash — debounced
