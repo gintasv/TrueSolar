@@ -46,19 +46,31 @@
   let unitMode = 'km';
   const MIN_TOUCH_PX = 28;
   const POINT_BODIES = BODIES.filter(b => b.type !== 'belt');
+  let currentSubzoomBody = null;
+  let currentInfoPanelBody = null;
 
   // ============================================================
   // Glossary linkify + popover
   // ============================================================
-  const GLOSSARY_BY_LOWER = {};
-  Object.keys(GLOSSARY).forEach(k => {
-    GLOSSARY_BY_LOWER[k.toLowerCase()] = { canonical: k, definition: GLOSSARY[k] };
-  });
-  const _sortedTerms = Object.keys(GLOSSARY).sort((a, b) => b.length - a.length);
-  const _escapedTerms = _sortedTerms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const GLOSSARY_REGEX = _escapedTerms.length
-    ? new RegExp('\\b(' + _escapedTerms.join('|') + ')\\b', 'gi')
-    : null;
+  // GLOSSARY_BY_LOWER maps lowercased display-term → { canonical: <English key>, definition }
+  // canonical key is stable across languages so popovers can be re-rendered after a switch.
+  let GLOSSARY_BY_LOWER = {};
+  let GLOSSARY_REGEX = null;
+  let GLOSSARY_LAST_ANCHOR = null;
+
+  function rebuildGlossaryIndex() {
+    GLOSSARY_BY_LOWER = {};
+    const entries = I18N.glossaryEntries();
+    entries.forEach(e => {
+      GLOSSARY_BY_LOWER[e.term.toLowerCase()] = { canonical: e.key, term: e.term, definition: e.definition };
+    });
+    const sortedTerms = entries.map(e => e.term).sort((a, b) => b.length - a.length);
+    const escapedTerms = sortedTerms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    // Use Unicode-aware lookarounds so non-ASCII Lithuanian letters are treated as letters.
+    GLOSSARY_REGEX = escapedTerms.length
+      ? new RegExp('(?<![\\p{L}])(' + escapedTerms.join('|') + ')(?![\\p{L}])', 'giu')
+      : null;
+  }
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => (
@@ -79,11 +91,12 @@
 
   let popoverOpenFor = null;
   function showGlossaryPopover(termKey, anchorEl) {
-    const entry = GLOSSARY[termKey];
+    const entry = I18N.glossaryEntryByKey(termKey);
     if (!entry) return;
     popoverOpenFor = termKey;
-    GLOSSARY_POPOVER_TERM.textContent = termKey;
-    GLOSSARY_POPOVER_DEF.textContent = entry;
+    GLOSSARY_LAST_ANCHOR = anchorEl;
+    GLOSSARY_POPOVER_TERM.textContent = entry.term;
+    GLOSSARY_POPOVER_DEF.textContent = entry.definition;
     GLOSSARY_POPOVER.hidden = false;
     GLOSSARY_POPOVER.setAttribute('aria-hidden', 'false');
     // Position above the anchor; flip below if no room
@@ -126,55 +139,63 @@
   // ============================================================
   // Formatting
   // ============================================================
+  function currentLocale() { return I18N.locale[I18N.current] || 'en-US'; }
+
+  function fmtFixed(n, digits) {
+    return n.toLocaleString(currentLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+
   function formatNumber(n) {
     if (n === 0) return '0';
     const abs = Math.abs(n);
-    if (abs < 1) return n.toFixed(2);
-    if (abs < 1000) return Math.round(n).toLocaleString('en-US');
-    if (abs < 1e6) return (n / 1000).toFixed(1) + 'K';
-    if (abs < 1e9) return (n / 1e6).toFixed(2) + 'M';
-    if (abs < 1e12) return (n / 1e9).toFixed(2) + 'B';
-    return (n / 1e12).toFixed(2) + 'T';
+    const loc = currentLocale();
+    if (abs < 1) return fmtFixed(n, 2);
+    if (abs < 1000) return Math.round(n).toLocaleString(loc);
+    if (abs < 1e6) return fmtFixed(n / 1000, 1) + I18N.unit('numK');
+    if (abs < 1e9) return fmtFixed(n / 1e6, 2) + I18N.unit('numM');
+    if (abs < 1e12) return fmtFixed(n / 1e9, 2) + I18N.unit('numB');
+    return fmtFixed(n / 1e12, 2) + I18N.unit('numT');
   }
 
   function formatDistance(km) {
     if (unitMode === 'au') {
       const au = km / KM_PER_AU;
-      if (au < 0.001) return (au * 1000).toFixed(1) + ' mAU';
-      if (au < 1) return au.toFixed(3) + ' AU';
-      return au.toFixed(2) + ' AU';
+      if (au < 0.001) return fmtFixed(au * 1000, 1) + I18N.unit('mAU');
+      if (au < 1) return fmtFixed(au, 3) + I18N.unit('au');
+      return fmtFixed(au, 2) + I18N.unit('au');
     }
     if (unitMode === 'mi') {
-      return formatNumber(km * 0.621371) + ' mi';
+      return formatNumber(km * 0.621371) + I18N.unit('mi');
     }
-    return formatNumber(km) + ' km';
+    return formatNumber(km) + I18N.unit('km');
   }
 
   function formatLightTime(km) {
-    if (km === 0) return '0 s';
+    if (km === 0) return '0' + I18N.unit('s');
     const seconds = km / SPEED_OF_LIGHT_KM_S;
-    if (seconds < 0.001) return (seconds * 1e6).toFixed(0) + ' μs';
-    if (seconds < 1) return (seconds * 1000).toFixed(0) + ' ms';
-    if (seconds < 60) return seconds.toFixed(1) + ' s';
+    const loc = currentLocale();
+    if (seconds < 0.001) return Math.round(seconds * 1e6).toLocaleString(loc) + I18N.unit('us');
+    if (seconds < 1) return Math.round(seconds * 1000).toLocaleString(loc) + I18N.unit('ms');
+    if (seconds < 60) return fmtFixed(seconds, 1) + I18N.unit('s');
     if (seconds < 3600) {
       const m = Math.floor(seconds / 60);
       const s = Math.round(seconds % 60);
-      return m + ' min ' + s + ' s';
+      return m + I18N.unit('minSep') + s + I18N.unit('s');
     }
     if (seconds < 86400) {
       const h = Math.floor(seconds / 3600);
       const m = Math.round((seconds % 3600) / 60);
-      return h + ' h ' + m + ' min';
+      return h + I18N.unit('hSep') + m + I18N.unit('min');
     }
-    return (seconds / 86400).toFixed(1) + ' days';
+    return fmtFixed(seconds / 86400, 1) + I18N.unit('days');
   }
 
   function bodyDistanceShort(body) {
-    if (body.distance_km === 0) return '—';
+    if (body.distance_km === 0) return I18N.unit('dashNoDist');
     if (body.distance_km >= KM_PER_AU * 0.3) {
-      return (body.distance_km / KM_PER_AU).toFixed(2) + ' AU';
+      return fmtFixed(body.distance_km / KM_PER_AU, 2) + I18N.unit('au');
     }
-    return formatNumber(body.distance_km) + ' km';
+    return formatNumber(body.distance_km) + I18N.unit('km');
   }
 
   // ============================================================
@@ -219,7 +240,7 @@
     wrap.style.left = strip_x(body.distance_km) + 'px';
     wrap.setAttribute('tabindex', '0');
     wrap.setAttribute('role', 'link');
-    wrap.setAttribute('aria-label', body.name + ', ' + bodyDistanceShort(body) + ' from Sun');
+    wrap.setAttribute('aria-label', I18N.t('aria.body', { name: I18N.bodyName(body.id), dist: bodyDistanceShort(body) }));
 
     // Size: dot diameter or min touch target
     const diameterPx = body.diameter_km
@@ -256,12 +277,12 @@
     let meta = '';
     if (body.distance_km > 0) {
       meta = bodyDistanceShort(body);
-      if (body.diameter_km) meta += ' · ⌀ ' + formatNumber(body.diameter_km) + ' km';
+      if (body.diameter_km) meta += I18N.t('label.diameterSep', { km: formatNumber(body.diameter_km) });
     } else if (body.diameter_km) {
-      meta = '⌀ ' + formatNumber(body.diameter_km) + ' km';
+      meta = I18N.t('label.diameterShort', { km: formatNumber(body.diameter_km) });
     }
-    label.innerHTML = '<span class="body-label-name">' + body.name + '</span>' +
-      (meta ? '<span class="body-label-meta">' + meta + '</span>' : '');
+    label.innerHTML = '<span class="body-label-name">' + escapeHtml(I18N.bodyName(body.id)) + '</span>' +
+      (meta ? '<span class="body-label-meta">' + escapeHtml(meta) + '</span>' : '');
     wrap.appendChild(label);
 
     // Zoom affordance
@@ -269,7 +290,7 @@
       const zoomBtn = document.createElement('button');
       zoomBtn.className = 'body-zoom-btn';
       zoomBtn.type = 'button';
-      zoomBtn.setAttribute('aria-label', 'View ' + body.name + ' detail');
+      zoomBtn.setAttribute('aria-label', I18N.t('aria.zoomBtn', { name: I18N.bodyName(body.id) }));
       zoomBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -306,7 +327,7 @@
 
     const label = document.createElement('span');
     label.className = 'belt-label';
-    label.textContent = belt.name;
+    label.textContent = I18N.bodyName(belt.id);
     wrap.appendChild(label);
 
     STRIP.appendChild(wrap);
@@ -335,11 +356,12 @@
       const tick = document.createElement('div');
       tick.className = 'minimap-tick type-' + body.type;
       tick.style.left = (logFraction(body.distance_km) * 100) + '%';
+      tick.dataset.id = body.id;
       const lbl = document.createElement('span');
       lbl.className = 'minimap-tick-label';
-      lbl.textContent = body.name;
+      lbl.textContent = I18N.bodyName(body.id);
       tick.appendChild(lbl);
-      tick.title = body.name;
+      tick.title = I18N.bodyName(body.id);
       MINIMAP_TRACK.appendChild(tick);
     });
 
@@ -357,9 +379,10 @@
   function buildBodyIndex() {
     POINT_BODIES.forEach(body => {
       const li = document.createElement('li');
+      li.dataset.id = body.id;
       const a = document.createElement('a');
       a.href = '#' + body.id;
-      a.innerHTML = body.name + '<span class="meta">' + bodyDistanceShort(body) + '</span>';
+      a.innerHTML = escapeHtml(I18N.bodyName(body.id)) + '<span class="meta">' + escapeHtml(bodyDistanceShort(body)) + '</span>';
       a.addEventListener('click', (e) => {
         e.preventDefault();
         scrollToBody(body);
@@ -402,6 +425,21 @@
   // remove it ~250 ms after they stop. The spaceship flame and motion streaks
   // listen to this class to bloom/fade.
   let scrollActivityTimer = null;
+  // Direction tracking for the spaceship orientation. Only flip when the user
+  // moves more than DIRECTION_THRESHOLD_PX in one direction, so jitter at rest
+  // (sub-pixel browser noise, smooth-scroll easing tail) doesn't toggle the flip.
+  let lastScrollForDir = -1;
+  const DIRECTION_THRESHOLD_PX = 4;
+  function updateFlyingDirection(currentScrollLeft) {
+    if (lastScrollForDir < 0) { lastScrollForDir = currentScrollLeft; return; }
+    const delta = currentScrollLeft - lastScrollForDir;
+    if (Math.abs(delta) < DIRECTION_THRESHOLD_PX) return;
+    const flyingLeft = delta < 0;
+    if (flyingLeft !== document.body.classList.contains('is-flying-left')) {
+      document.body.classList.toggle('is-flying-left', flyingLeft);
+    }
+    lastScrollForDir = currentScrollLeft;
+  }
   function markScrollActivity() {
     if (!document.body.classList.contains('is-scrolling')) {
       document.body.classList.add('is-scrolling');
@@ -425,9 +463,9 @@
     const nextBody = findNextBody(distanceKm);
     if (nextBody) {
       const remaining = nextBody.distance_km - distanceKm;
-      HUD_NEXT.textContent = nextBody.name + ' · ' + formatDistance(Math.max(0, remaining));
+      HUD_NEXT.textContent = I18N.bodyName(nextBody.id) + I18N.unit('sep') + formatDistance(Math.max(0, remaining));
     } else {
-      HUD_NEXT.textContent = 'interstellar space';
+      HUD_NEXT.textContent = I18N.t('hud.interstellar');
     }
 
     // Star parallax — multiply background-position-x by depth factor.
@@ -439,6 +477,7 @@
 
     // Mark scroll activity for the spaceship flame + motion streaks
     markScrollActivity();
+    updateFlyingDirection(scrollLeft);
 
     // Minimap cursor
     const f = logFraction(distanceKm);
@@ -504,14 +543,17 @@
     }
     milestoneShownId = body.id;
     MILESTONE_CARD.hidden = false;
+    renderMilestone(body);
+    if (milestoneHideTimer) { clearTimeout(milestoneHideTimer); milestoneHideTimer = null; }
+  }
+  function renderMilestone(body) {
     const hasDetails = !!BODY_DETAILS[body.id];
     MILESTONE_CARD.innerHTML =
-      '<div class="name">' + escapeHtml(body.name) + '</div>' +
-      '<div class="desc">' + linkifyGlossary(body.description || '') + '</div>' +
+      '<div class="name">' + escapeHtml(I18N.bodyName(body.id)) + '</div>' +
+      '<div class="desc">' + linkifyGlossary(I18N.bodyDescription(body.id)) + '</div>' +
       (hasDetails
-        ? '<button type="button" class="milestone-learn-more" data-body-id="' + escapeHtml(body.id) + '">Learn more →</button>'
+        ? '<button type="button" class="milestone-learn-more" data-body-id="' + escapeHtml(body.id) + '">' + escapeHtml(I18N.t('milestone.learnMore')) + '</button>'
         : '');
-    if (milestoneHideTimer) { clearTimeout(milestoneHideTimer); milestoneHideTimer = null; }
   }
   function scheduleHideMilestone() {
     if (!milestoneShownId || milestoneHideTimer) return;
@@ -536,8 +578,9 @@
       hash = '#dist=' + au.toFixed(2) + 'au';
     }
     try {
-      if (hash) history.replaceState(null, '', hash);
-      else history.replaceState(null, '', window.location.pathname);
+      const search = window.location.search || '';
+      if (hash) history.replaceState(null, '', window.location.pathname + search + hash);
+      else history.replaceState(null, '', window.location.pathname + search);
     } catch (_) {
       // file:// or sandboxed — silently ignore
     }
@@ -694,24 +737,32 @@
     const scaleKmPerPx = Math.round(anchorDiamKm / targetParentPx);
     body.zoom._scale_km_per_px = scaleKmPerPx;
 
-    SUBZOOM_TITLE.textContent = body.name + ' detail';
-    SUBZOOM_SCALE.textContent = '1 pixel = ' + scaleKmPerPx.toLocaleString('en-US') + ' km';
-    HUD.classList.add('subzoom-mode');
-    HUD_SCALE.textContent = '1 px = ' + scaleKmPerPx.toLocaleString('en-US') + ' km — ' + body.name + ' detail';
-
+    currentSubzoomBody = body;
+    renderSubzoomChrome(body, scaleKmPerPx);
     buildSubzoomStrip(body);
     SUBZOOM_OVERLAY.hidden = false;
     SUBZOOM_OVERLAY.setAttribute('aria-hidden', 'false');
     SUBZOOM_CLOSE.focus();
   }
 
+  function renderSubzoomChrome(body, scaleKmPerPx) {
+    const loc = currentLocale();
+    const kmStr = scaleKmPerPx.toLocaleString(loc);
+    const name = I18N.bodyName(body.id);
+    SUBZOOM_TITLE.textContent = I18N.t('subzoom.title', { name });
+    SUBZOOM_SCALE.textContent = I18N.t('subzoom.scale', { km: kmStr });
+    HUD.classList.add('subzoom-mode');
+    HUD_SCALE.textContent = I18N.t('subzoom.scaleHud', { km: kmStr, name });
+  }
+
   function closeSubzoom() {
     SUBZOOM_OVERLAY.hidden = true;
     SUBZOOM_OVERLAY.setAttribute('aria-hidden', 'true');
     HUD.classList.remove('subzoom-mode');
-    HUD_SCALE.textContent = '1 pixel = Pluto (2,376 km)';
+    HUD_SCALE.textContent = I18N.t('hud.scaleDefault');
     SUBZOOM_STRIP.innerHTML = '';
     SUBZOOM_DETAIL.innerHTML = '';
+    currentSubzoomBody = null;
     VIEWPORT.focus();
   }
 
@@ -744,11 +795,11 @@
     const anchorEl = createSubzoomItem(
       {
         id: body.id,
-        name: body.name,
+        name: I18N.bodyName(body.id),
         type: body.type,
         diameter_km: anchorDiamKm,
         color: body.color,
-        description: body.description
+        description: I18N.bodyDescription(body.id)
       },
       pxPerKm,
       anchorX,
@@ -775,9 +826,10 @@
     });
 
     SUBZOOM_VIEWPORT.scrollLeft = 0;
-    SUBZOOM_DETAIL.innerHTML =
-      '<strong>' + body.name + '</strong> — ' + (body.description || '') +
-      '<br>Scroll right to see what orbits here. Click an item for details.';
+    SUBZOOM_DETAIL.innerHTML = I18N.t('subzoom.intro.html', {
+      name: escapeHtml(I18N.bodyName(body.id)),
+      description: escapeHtml(I18N.bodyDescription(body.id))
+    });
   }
 
   function createSubzoomItem(item, pxPerKm, x, isAnchor, placement, stackOffset) {
@@ -800,26 +852,30 @@
     dot.style.background = item.color || '#aaa';
     wrap.appendChild(dot);
 
+    const displayName = isAnchor ? item.name : I18N.bodyName(item.id);
     if (!isAnchor) {
       const label = document.createElement('span');
       label.className = 'subzoom-body-label subzoom-body-label-' + placement;
       label.style.setProperty('--stack-offset', stackOffset + 'px');
       let altText = '';
+      const loc = currentLocale();
       // Prefer the human-natural "altitude above surface" if present (used for satellites)
       if (item.altitude_km != null && item.altitude_km > 0) {
-        if (item.altitude_km < 1000) altText = Math.round(item.altitude_km) + ' km up';
-        else altText = (item.altitude_km / 1000).toFixed(0) + ',000 km up';
+        if (item.altitude_km < 1000) altText = I18N.t('label.altitudeUp', { km: Math.round(item.altitude_km).toLocaleString(loc) });
+        else altText = I18N.t('label.altitudeUpThou', { km: (item.altitude_km / 1000).toFixed(0) });
       } else if (item.distance_km != null && item.distance_km > 0) {
         if (item.distance_km < 1e6) altText = (item.distance_km / 1000).toFixed(0) + 'k km';
-        else altText = (item.distance_km / 1e6).toFixed(2) + 'M km';
+        else altText = fmtFixed(item.distance_km / 1e6, 2) + 'M km';
       }
-      label.textContent = item.name + (altText ? ' · ' + altText : '');
+      label.textContent = displayName + (altText ? I18N.unit('sep') + altText : '');
       wrap.appendChild(label);
     }
 
     wrap.addEventListener('click', (e) => {
       e.preventDefault();
-      SUBZOOM_DETAIL.innerHTML = '<strong>' + item.name + '</strong> — ' + (item.description || '');
+      const detName = isAnchor ? item.name : I18N.bodyName(item.id);
+      const detDesc = isAnchor ? (item.description || '') : I18N.bodyDescription(item.id);
+      SUBZOOM_DETAIL.innerHTML = '<strong>' + escapeHtml(detName) + '</strong> — ' + escapeHtml(detDesc);
       const target = x - SUBZOOM_VIEWPORT.clientWidth / 2;
       SUBZOOM_VIEWPORT.scrollTo({
         left: target,
@@ -838,32 +894,44 @@
   // Info panel (Learn more) + Glossary nav
   // ============================================================
   function openInfoPanel(body) {
-    const det = BODY_DETAILS[body.id];
+    const det = I18N.detailsFor(body.id);
     if (!det) return;
-    INFO_PANEL_TITLE.textContent = body.name;
+    currentInfoPanelBody = body;
+    renderInfoPanel(body, det);
+    INFO_PANEL.hidden = false;
+    INFO_PANEL.setAttribute('aria-hidden', 'false');
+    INFO_PANEL.classList.add('entering');
+    requestAnimationFrame(() => INFO_PANEL.classList.remove('entering'));
+  }
 
+  function renderInfoPanel(body, det) {
+    const displayName = I18N.bodyName(body.id);
+    INFO_PANEL_TITLE.textContent = displayName;
+
+    const loc = currentLocale();
     let html = '';
     if (det.image) {
       html += '<figure class="info-panel-figure">'
-           +    '<img src="' + escapeHtml(det.image) + '" alt="' + escapeHtml(body.name) + '" loading="lazy" referrerpolicy="no-referrer">'
+           +    '<img src="' + escapeHtml(det.image) + '" alt="' + escapeHtml(displayName) + '" loading="lazy" referrerpolicy="no-referrer">'
            + (det.image_credit ? '<figcaption>' + escapeHtml(det.image_credit) + '</figcaption>' : '')
            + '</figure>';
     }
     html += '<div class="stats">';
     if (body.distance_km > 0) {
-      html += '<span class="label">Distance from Sun</span>'
-           +  '<span class="value">' + escapeHtml((body.distance_km / KM_PER_AU).toFixed(2) + ' AU · ' + formatNumber(body.distance_km) + ' km') + '</span>';
+      const distStr = fmtFixed(body.distance_km / KM_PER_AU, 2) + I18N.unit('au') + I18N.unit('sep') + formatNumber(body.distance_km) + I18N.unit('km');
+      html += '<span class="label">' + escapeHtml(I18N.t('info.distance')) + '</span>'
+           +  '<span class="value">' + escapeHtml(distStr) + '</span>';
     }
     if (body.diameter_km) {
-      html += '<span class="label">Diameter</span>'
-           +  '<span class="value">' + escapeHtml(formatNumber(body.diameter_km) + ' km') + '</span>';
+      html += '<span class="label">' + escapeHtml(I18N.t('info.diameter')) + '</span>'
+           +  '<span class="value">' + escapeHtml(formatNumber(body.diameter_km) + I18N.unit('km')) + '</span>';
     }
     if (body.distance_km > 0) {
-      html += '<span class="label">Light from Sun</span>'
+      html += '<span class="label">' + escapeHtml(I18N.t('info.lightTime')) + '</span>'
            +  '<span class="value">' + escapeHtml(formatLightTime(body.distance_km)) + '</span>';
     }
     if (body.type) {
-      html += '<span class="label">Type</span><span class="value">' + escapeHtml(body.type) + '</span>';
+      html += '<span class="label">' + escapeHtml(I18N.t('info.type')) + '</span><span class="value">' + escapeHtml(I18N.typeLabel(body.type)) + '</span>';
     }
     html += '</div>';
 
@@ -871,22 +939,19 @@
       html += '<p>' + linkifyGlossary(det.overview) + '</p>';
     }
     if (det.facts && det.facts.length) {
-      html += '<h3>Did you know</h3><ul>';
+      html += '<h3>' + escapeHtml(I18N.t('info.factsTitle')) + '</h3><ul>';
       det.facts.forEach(f => { html += '<li>' + linkifyGlossary(f) + '</li>'; });
       html += '</ul>';
     }
 
     INFO_PANEL_BODY.innerHTML = html;
-    INFO_PANEL.hidden = false;
-    INFO_PANEL.setAttribute('aria-hidden', 'false');
-    INFO_PANEL.classList.add('entering');
-    requestAnimationFrame(() => INFO_PANEL.classList.remove('entering'));
   }
 
   function closeInfoPanel() {
     INFO_PANEL.hidden = true;
     INFO_PANEL.setAttribute('aria-hidden', 'true');
     INFO_PANEL_BODY.innerHTML = '';
+    currentInfoPanelBody = null;
     hideGlossaryPopover();
   }
 
@@ -901,18 +966,7 @@
   });
 
   function buildGlossaryNav() {
-    Object.keys(GLOSSARY).sort().forEach(term => {
-      const li = document.createElement('li');
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = term;
-      btn.addEventListener('click', () => {
-        showGlossaryPopover(term, btn);
-      });
-      li.appendChild(btn);
-      GLOSSARY_NAV_LIST.appendChild(li);
-    });
-
+    populateGlossaryNav();
     GLOSSARY_NAV_TOGGLE.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = !GLOSSARY_NAV_LIST.hidden;
@@ -927,6 +981,23 @@
     });
   }
 
+  function populateGlossaryNav() {
+    GLOSSARY_NAV_LIST.innerHTML = '';
+    const entries = I18N.glossaryEntries().slice().sort((a, b) => a.term.localeCompare(b.term, currentLocale()));
+    entries.forEach(entry => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = entry.term;
+      btn.dataset.glossaryKey = entry.key;
+      btn.addEventListener('click', () => {
+        showGlossaryPopover(entry.key, btn);
+      });
+      li.appendChild(btn);
+      GLOSSARY_NAV_LIST.appendChild(li);
+    });
+  }
+
   // ============================================================
   // Unit toggle
   // ============================================================
@@ -937,6 +1008,128 @@
         btn.classList.add('active');
         unitMode = btn.dataset.unit;
         updateAll();
+      });
+    });
+  }
+
+  // ============================================================
+  // Language toggle + translation application
+  // ============================================================
+  function applyTranslations() {
+    // Static [data-i18n] / [data-i18n-html] / [data-i18n-aria] nodes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = I18N.t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      el.innerHTML = I18N.t(el.getAttribute('data-i18n-html'));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      el.setAttribute('aria-label', I18N.t(el.getAttribute('data-i18n-aria')));
+    });
+
+    // Glossary lookup tables depend on current language; rebuild before re-rendering text.
+    rebuildGlossaryIndex();
+
+    // Body labels on the strip
+    document.querySelectorAll('.body').forEach(el => {
+      const id = el.dataset.id;
+      if (!id) return;
+      const body = BODIES.find(b => b.id === id);
+      if (!body) return;
+      const nameEl = el.querySelector('.body-label-name');
+      if (nameEl) nameEl.textContent = I18N.bodyName(id);
+      const metaEl = el.querySelector('.body-label-meta');
+      if (metaEl) {
+        let meta = '';
+        if (body.distance_km > 0) {
+          meta = bodyDistanceShort(body);
+          if (body.diameter_km) meta += I18N.t('label.diameterSep', { km: formatNumber(body.diameter_km) });
+        } else if (body.diameter_km) {
+          meta = I18N.t('label.diameterShort', { km: formatNumber(body.diameter_km) });
+        }
+        metaEl.textContent = meta;
+      }
+      el.setAttribute('aria-label', I18N.t('aria.body', { name: I18N.bodyName(id), dist: bodyDistanceShort(body) }));
+      const zb = el.querySelector('.body-zoom-btn');
+      if (zb) zb.setAttribute('aria-label', I18N.t('aria.zoomBtn', { name: I18N.bodyName(id) }));
+    });
+
+    // Belt labels
+    document.querySelectorAll('.belt .belt-label').forEach(el => {
+      const wrap = el.parentElement;
+      const belt = BODIES.find(b => b._element === wrap);
+      if (belt) el.textContent = I18N.bodyName(belt.id);
+    });
+
+    // Minimap tick labels & titles
+    MINIMAP_TRACK.querySelectorAll('.minimap-tick').forEach(tick => {
+      const id = tick.dataset.id;
+      if (!id) return;
+      tick.title = I18N.bodyName(id);
+      const lbl = tick.querySelector('.minimap-tick-label');
+      if (lbl) lbl.textContent = I18N.bodyName(id);
+    });
+
+    // Body index list
+    BODY_INDEX_LIST.querySelectorAll('li').forEach(li => {
+      const id = li.dataset.id;
+      if (!id) return;
+      const body = POINT_BODIES.find(b => b.id === id);
+      if (!body) return;
+      const a = li.querySelector('a');
+      if (a) a.innerHTML = escapeHtml(I18N.bodyName(id)) + '<span class="meta">' + escapeHtml(bodyDistanceShort(body)) + '</span>';
+    });
+
+    // Glossary nav list
+    populateGlossaryNav();
+
+    // HUD scale badge: subzoom-mode keeps its own template; default uses hud.scaleDefault
+    if (HUD.classList.contains('subzoom-mode') && currentSubzoomBody) {
+      const scale = (currentSubzoomBody.zoom && currentSubzoomBody.zoom._scale_km_per_px) || 1;
+      renderSubzoomChrome(currentSubzoomBody, scale);
+    } else {
+      HUD_SCALE.textContent = I18N.t('hud.scaleDefault');
+    }
+
+    // Re-render any open overlays / cards
+    if (currentSubzoomBody) {
+      buildSubzoomStrip(currentSubzoomBody);
+    }
+    if (currentInfoPanelBody) {
+      const det = I18N.detailsFor(currentInfoPanelBody.id);
+      if (det) renderInfoPanel(currentInfoPanelBody, det);
+    }
+    if (milestoneShownId) {
+      const body = BODIES.find(b => b.id === milestoneShownId);
+      if (body) renderMilestone(body);
+    }
+    if (popoverOpenFor && GLOSSARY_LAST_ANCHOR) {
+      // Re-show with current-language content (same anchor element).
+      showGlossaryPopover(popoverOpenFor, GLOSSARY_LAST_ANCHOR);
+    }
+
+    // HUD values that recompute via updateAll
+    updateAll();
+  }
+
+  function setupLanguageToggle() {
+    document.querySelectorAll('.hud-lang-toggle button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === I18N.current);
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.lang;
+        if (code === I18N.current) return;
+        I18N.setLanguage(code);
+        document.querySelectorAll('.hud-lang-toggle button').forEach(b => {
+          b.classList.toggle('active', b.dataset.lang === I18N.current);
+        });
+        // Update URL with the new ?lang= value, preserving hash.
+        try {
+          const url = new URL(window.location.href);
+          if (I18N.current === I18N.defaultLanguage) url.searchParams.delete('lang');
+          else url.searchParams.set('lang', I18N.current);
+          history.replaceState(null, '', url.pathname + (url.search || '') + (url.hash || ''));
+        } catch (_) {}
+        applyTranslations();
       });
     });
   }
@@ -968,12 +1161,28 @@
   // Init
   // ============================================================
   function init() {
+    // I18N.resolveInitial() already ran in i18n.js; rebuild glossary index
+    // for the resolved language before any text is built.
+    rebuildGlossaryIndex();
+    // Apply static-string translations once before constructing dynamic content,
+    // so the intro card / HUD labels reflect the current language from the first paint.
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = I18N.t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      el.innerHTML = I18N.t(el.getAttribute('data-i18n-html'));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      el.setAttribute('aria-label', I18N.t(el.getAttribute('data-i18n-aria')));
+    });
+
     buildStrip();
     buildMinimap();
     buildBodyIndex();
     buildGlossaryNav();
     setupKeyboard();
     setupUnitToggle();
+    setupLanguageToggle();
     setupIntro();
 
     VIEWPORT.addEventListener('scroll', onScroll, { passive: true });
